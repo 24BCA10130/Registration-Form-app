@@ -1,0 +1,100 @@
+package com.example.training
+
+import android.content.ContentValues
+import android.content.Context
+import android.database.Cursor
+import android.database.sqlite.SQLiteDatabase
+import android.database.sqlite.SQLiteOpenHelper
+
+class DBHelper(context: Context) :
+    SQLiteOpenHelper(context, "UserDatabase", null, 1) {
+
+    override fun onCreate(db: SQLiteDatabase?) {
+
+        val createTable = "CREATE TABLE users (" +
+                "username TEXT, " +
+                "email TEXT, " +
+                "password TEXT)"
+
+        db?.execSQL(createTable)
+    }
+
+    override fun onUpgrade(
+        db: SQLiteDatabase?,
+        oldVersion: Int,
+        newVersion: Int
+    ) {
+
+        db?.execSQL("DROP TABLE IF EXISTS users")
+        onCreate(db)
+    }
+
+    fun insertData(
+        username: String,
+        email: String,
+        password: String
+    ): Boolean {
+
+        val db = this.writableDatabase
+        val contentValues = ContentValues()
+
+        contentValues.put("username", username)
+        contentValues.put("email", email)
+        contentValues.put("password", password)
+
+        val result = db.insert(
+            "users",
+            null,
+            contentValues
+        )
+
+        db.close()
+
+        return result != -1L
+    }
+
+    fun getData(): Cursor {
+
+        val db = this.readableDatabase
+        return db.rawQuery(
+            "SELECT * FROM users",
+            null
+        )
+    }
+
+
+    fun updateData(
+        username: String,
+        email: String,
+        password: String
+    ): Boolean {
+
+        val db = this.writableDatabase
+
+        val contentValues = ContentValues()
+        contentValues.put("email", email)
+        contentValues.put("password", password)
+
+        val result = db.update(
+            "users",
+            contentValues,
+            "username=?",
+            arrayOf(username)
+        )
+
+        return result > 0
+    }
+
+    fun deleteData(username: String): Boolean {
+
+        val db = this.writableDatabase
+
+        val result = db.delete(
+            "users",
+            "username=?",
+            arrayOf(username)
+        )
+
+        return result > 0
+    }
+}
